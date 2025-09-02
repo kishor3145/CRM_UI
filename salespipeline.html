@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Pipeline - Manufacturing CRM</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --inquiry: #3498db;
+            --quotation: #9b59b6;
+            --negotiation: #f39c12;
+            --order: #27ae60;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .sidebar {
+            background-color: var(--primary);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 60px;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            margin: 4px 0;
+            border-radius: 4px;
+        }
+        
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .sidebar .nav-link.active {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px 20px;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            padding-top: 80px;
+        }
+        
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            border: none;
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+            padding: 15px 20px;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .stat-card .count {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .stat-card .label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .table th {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .opportunity-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .activity-item {
+            border-left: 2px solid var(--secondary);
+            padding: 10px 15px;
+            margin-left: 15px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .activity-item:before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: var(--secondary);
+            position: absolute;
+            left: -7px;
+            top: 15px;
+            border-radius: 50%;
+        }
+        
+        .activity-time {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            padding: 3px 6px;
+            font-size: 0.7rem;
+        }
+        
+        .badge-inquiry {
+            background-color: var(--inquiry);
+        }
+        
+        .badge-quotation {
+            background-color: var(--quotation);
+        }
+        
+        .badge-negotiation {
+            background-color: var(--negotiation);
+        }
+        
+        .badge-order {
+            background-color: var(--order);
+        }
+        
+        .pipeline-container {
+            display: flex;
+            overflow-x: auto;
+            padding-bottom: 20px;
+        }
+        
+        .pipeline-stage {
+            min-width: 300px;
+            margin-right: 15px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        .pipeline-stage-header {
+            padding: 10px;
+            border-radius: 6px;
+            color: white;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .stage-inquiry .pipeline-stage-header {
+            background-color: var(--inquiry);
+        }
+        
+        .stage-quotation .pipeline-stage-header {
+            background-color: var(--quotation);
+        }
+        
+        .stage-negotiation .pipeline-stage-header {
+            background-color: var(--negotiation);
+        }
+        
+        .stage-order .pipeline-stage-header {
+            background-color: var(--order);
+        }
+        
+        .opportunity-card {
+            background-color: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            cursor: grab;
+            border-left: 4px solid var(--inquiry);
+        }
+        
+        .opportunity-card.quotation {
+            border-left-color: var(--quotation);
+        }
+        
+        .opportunity-card.negotiation {
+            border-left-color: var(--negotiation);
+        }
+        
+        .opportunity-card.order {
+            border-left-color: var(--order);
+        }
+        
+        .progress {
+            height: 8px;
+        }
+        
+        .forecast-item {
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+                text-align: center;
+            }
+            
+            .sidebar .nav-link span {
+                display: none;
+            }
+            
+            .sidebar .nav-link i {
+                margin-right: 0;
+                font-size: 1.2rem;
+            }
+            
+            .main-content {
+                margin-left: 80px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .pipeline-stage {
+                min-width: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-industry me-2"></i>
+                <span class="fw-bold">ManufacturingCRM</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge badge bg-danger">7</span>
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <img src="https://ui-avatars.com/api/?name=John+Doe&background=3498db&color=fff" class="opportunity-avatar me-1">
+                            John Doe
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i> Profile</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i> Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar col-lg-2 col-md-3 d-md-block">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="index.html">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="Customermgmt.html">
+                    <i class="fas fa-users"></i>
+                    <span>Customer Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="leadmgmt.html">
+                    <i class="fas fa-bullseye"></i>
+                    <span>Lead Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="salespipeline.html">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Sales Pipeline</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="User.html">
+                    <i class="fas fa-user-cog"></i>
+                    <span>User Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span>Quotations</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Orders</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-box"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-headset"></i>
+                    <span>Support Tickets</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reports</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container-fluid">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold">Sales Pipeline Management</h2>
+                <div>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOpportunityModal">
+                        <i class="fas fa-plus me-2"></i> Add Opportunity
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card">
+                        <i class="fas fa-funnel-dollar" style="color: #3498db;"></i>
+                        <div class="count">$1.2M</div>
+                        <div class="label">PIPELINE VALUE</div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card">
+                        <i class="fas fa-clipboard-list" style="color: #9b59b6;"></i>
+                        <div class="count">24</div>
+                        <div class="label">ACTIVE OPPORTUNITIES</div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card">
+                        <i class="fas fa-percentage" style="color: #27ae60;"></i>
+                        <div class="count">68%</div>
+                        <div class="label">WIN RATE</div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card">
+                        <i class="fas fa-clock" style="color: #f39c12;"></i>
+                        <div class="count">14</div>
+                        <div class="label">PENDING ACTIONS</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pipeline Visualization -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span>Sales Pipeline</span>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-filter me-1"></i> Filter
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-sort me-1"></i> Sort
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="pipeline-container">
+                        <!-- Inquiry Stage -->
+                        <div class="pipeline-stage stage-inquiry">
+                            <div class="pipeline-stage-header d-flex justify-content-between">
+                                <span>Inquiry</span>
+                                <span class="badge bg-light text-dark">8</span>
+                            </div>
+                            <div class="opportunity-card">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="fw-medium">Custom Machinery Parts</div>
+                                    <span class="badge badge-inquiry">Inquiry</span>
+                                </div>
+                                <div class="mb-2">
+                                    <span class="fw-medium">Tech Solutions Ltd</span>
+                                    <div class="text-muted small">Robert Johnson</div>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <div>
+                                        <span class="fw-medium">$45,000</span>
+                                    </div>
+                                    <div class="text-muted small">30% probability</div>
+                                </div>
+                                <div class="progress mb-2" style="height: 5px;">
+                                    <div class="progress-bar" style="width: 30%; background-color: var(--inquiry);"></div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="text-muted small">Due: Oct 30, 2023</div>
+                                    <img src="https://ui-avatars.com/api/?name=Sarah+Smith&background=27ae60&color=fff" class="opportunity-avatar" title="Sarah Smith">
+                                </div>
+                            </div>
+                            <div class="opportunity-card">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="fw-medium">Production Line Upgrade</div>
+                                    <span class="badge badge-inquiry">Inquiry</span>
+                                </div>
+                                <div class="mb-2">
+                                    <span class="fw-medium">Global Parts Inc</span>
+                                    <div class="text-muted small">Jennifer Wilson</div>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <div>
+                                        <span class="fw-medium">$120,000</span>
+                                    </div>
+                                    <div class="text-muted small">20% probability</div>
+                                </div>
+                                <div class="progress mb-2" style="height: 5px;">
+                                    <div class="progress-bar" style="width: 20%; background-color: var(--inquiry);"></div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="text-muted small">Due: Nov 15, 2023</div>
+                                    <img src="https://ui-avatars.com/api/?name=Mike+Brown&background=f39c12&color=fff" class="opportunity-avatar" title="Mike Brown">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Quotation Stage -->
+                        <div class="pipeline-stage stage-quotation">
+                            <div class="pipeline-stage-header d-flex justify-content-between">
+                                <span>Quotation</span>
+                                <span class="badge bg-light text-dark">7</span>
+                            </div>
+                            <div class="opportunity-card quotation">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="fw-medium">Precision Components</div>
+                                    <span class="badge badge-quotation">Quotation</span>
+                                </div>
+                                <div class="mb-2">
+                                    <span class="fw-medium">Prime Components</span>
+                                    <div class="text-muted small">David Miller</div>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <div>
+                                        <span class="fw-medium">$28,500</span>
+                                    </div>
+                                    <div class="text-muted small">50% probability</div>
+                                </div>
+                                <div class="progress mb-2" style="height: 5px;">
+                                    <div class="progress-bar" style="width: 50%; background-color: var(--quotation);"></div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="text-muted small">Due: Oct 25, 2023</div>
+                                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=3498db&color=fff" class="opportunity-avatar" title="John Doe">
+                                </div>
+                            </div>
+                            <div class="opportunity-card quotation">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="fw-medium">Industrial Valves Order</div>
+                                    <span class="badge badge-quotation">Quotation</span>
+                                </div>
+                                <div class="mb-2">
+                                    <span class="fw-medium">Innovate Manufacturing</span>
+                                    <div class="text-muted small">Emily Chen</div>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <div>
+                                        <span class="fw-medium">$62,000</span>
+                                    </div>
+                                    <div class="text-muted small">40% probability</div>
+                                </div>
+                                <div class="progress mb-2" style="height: 5px;">
+                                    <div class="progress-bar" style="width: 40%; background-color: var(--quotation);"></div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="text-muted small">Due: Nov 5, 2023</div>
+                                    <img src="https://ui-avatars.com/api/?name=Sarah+Smith&background=27ae60&color=fff" class="opportunity-avatar" title="Sarah Smith">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Negotiation Stage -->
+                        <div class="pipeline-stage stage-negotiation">
+                            <div class="pipeline-stage-header d-flex justify-content-between">
+                                <span>Negotiation</span>
+                                <span class="badge bg-light text-dark">5</span>
+                            </div>
+                            <div class="opportunity-card negotiation">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="fw-medium">Assembly Equipment</div>
+                                    <span class="badge badge-negotiation">Negotiation</span>
+                                </div>
+                                <div class="mb-2">
+                                    <span class="fw-medium">AutoTech Solutions</span>
+                                    <div class="text-muted small">Michael Zhang</div>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <div>
+                                        <span class="fw-medium">$85,000</span>
+                                    </div>
+                                    <div class="text-muted small">70% probability</div>
+                                </div>
+                                <div class="progress mb-2" style="height: 5px;">
+                                    <div class="progress-bar" style="width: 70%; background-color: var(--negotiation);"></div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="text-muted small">Due: Oct 28, 2023</div>
+                                    <img src="https://ui-avatars.com/api/?name=Mike+Brown&background=f39c12&color=fff" class="opportunity-avatar" title="Mike Brown">
+                                </div>
+                            </div>
+                            <div class="opportunity-card negotiation">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="fw-medium">Custom Fabrication</div>
+                                    <span class="badge badge-negotiation">Negotiation</span>
+                                </div>
+                                <div class="mb-2">
+                                    <span class="fw-medium">MetalWorks Inc</span>
+                                    <div class="text-muted small">James Wilson</div>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <div>
+                                        <span class="fw-medium">$152,000</span>
+                                    </div>
+                                    <div class="text-muted small">65% probability</div>
+                                </div>
+                                <div class="progress mb-2" style="height: 5px;">
+                                    <div class="progress-bar" style="width: 65%; background-color: var(--negotiation);"></div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="text-muted small">Due: Nov 12, 2023</div>
+                                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=3498db&color=fff" class="opportunity-avatar" title="John Doe">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Order Stage -->
+                        <div class="pipeline-stage stage-order">
+                            <div class="pipeline-stage-header d-flex justify-content-between">
+                                <span>Order</span>
+                                <span class="badge bg-light text-dark">4</span>
+                            </div>
+                            <div class="opportunity-card order">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="fw-medium">Bulk Component Order</div>
+                                    <span class="badge badge-order">Order</span>
+                                </div>
+                                <div class="mb-2">
+                                    <span class="fw-medium">Prime Components</span>
+                                    <div class="text-muted small">David Miller</div>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <div>
+                                        <span class="fw-medium">$75,000</span>
+                                    </div>
+                                    <div class="text-muted small">90% probability</div>
+                                </div>
+                                <div class="progress mb-2" style="height: 5px;">
+                                    <div class="progress-bar" style="width: 90%; background-color: var(--order);"></div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <button class="btn btn-sm btn-success">Convert to Order</button>
+                                    <img src="https://ui-avatars.com/api/?name=Sarah+Smith&background=27ae60&color=fff" class="opportunity-avatar" title="Sarah Smith">
+                                </div>
+                            </div>
+                            <div class="opportunity-card order">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="fw-medium">Specialized Tooling</div>
+                                    <span class="badge badge-order">Order</span>
+                                </div>
+                                <div class="mb-2">
+                                    <span class="fw-medium">Precision Tools Co</span>
+                                    <div class="text-muted small">Amanda Roberts</div>
+                                </div>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <div>
+                                        <span class="fw-medium">$36,800</span>
+                                    </div>
+                                    <div class="text-muted small">95% probability</div>
+                                </div>
+                                <div class="progress mb-2" style="height: 5px;">
+                                    <div class="progress-bar" style="width: 95%; background-color: var(--order);"></div>
+                                </div>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <button class="btn btn-sm btn-success">Convert to Order</button>
+                                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=3498db&color=fff" class="opportunity-avatar" title="John Doe">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Opportunity List -->
+                <div class="col-xl-8 col-lg-12">
+                    <div class="card dashboard-widget">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>All Opportunities</span>
+                            <div class="d-flex">
+                                <div class="input-group me-2" style="width: 200px;">
+                                    <input type="text" class="form-control" placeholder="Search opportunities...">
+                                    <button class="btn btn-outline-secondary" type="button">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-filter me-1"></i> Filter
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#">All Opportunities</a></li>
+                                        <li><a class="dropdown-item" href="#">By Stage</a></li>
+                                        <li><a class="dropdown-item" href="#">By Value</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="#">By Assignee</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Opportunity</th>
+                                            <th>Company</th>
+                                            <th>Value</th>
+                                            <th>Stage</th>
+                                            <th>Probability</th>
+                                            <th>Assignee</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div class="fw-medium">Custom Machinery Parts</div>
+                                                <div class="text-muted small">Created: Oct 10, 2023</div>
+                                            </td>
+                                            <td>Tech Solutions Ltd</td>
+                                            <td>$45,000</td>
+                                            <td><span class="badge badge-inquiry">Inquiry</span></td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="progress me-2" style="width: 60px; height: 5px;">
+                                                        <div class="progress-bar" style="width: 30%; background-color: var(--inquiry);"></div>
+                                                    </div>
+                                                    <span>30%</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://ui-avatars.com/api/?name=Sarah+Smith&background=27ae60&color=fff" class="opportunity-avatar me-2" title="Sarah Smith">
+                                                    <span>Sarah Smith</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-success me-1"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-info"><i class="fas fa-arrow-right"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="fw-medium">Precision Components</div>
+                                                <div class="text-muted small">Created: Oct 5, 2023</div>
+                                            </td>
+                                            <td>Prime Components</td>
+                                            <td>$28,500</td>
+                                            <td><span class="badge badge-quotation">Quotation</span></td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="progress me-2" style="width: 60px; height: 5px;">
+                                                        <div class="progress-bar" style="width: 50%; background-color: var(--quotation);"></div>
+                                                    </div>
+                                                    <span>50%</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=3498db&color=fff" class="opportunity-avatar me-2" title="John Doe">
+                                                    <span>John Doe</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-success me-1"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-info"><i class="fas fa-arrow-right"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="fw-medium">Assembly Equipment</div>
+                                                <div class="text-muted small">Created: Oct 2, 2023</div>
+                                            </td>
+                                            <td>AutoTech Solutions</td>
+                                            <td>$85,000</td>
+                                            <td><span class="badge badge-negotiation">Negotiation</span></td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="progress me-2" style="width: 60px; height: 5px;">
+                                                        <div class="progress-bar" style="width: 70%; background-color: var(--negotiation);"></div>
+                                                    </div>
+                                                    <span>70%</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://ui-avatars.com/api/?name=Mike+Brown&background=f39c12&color=fff" class="opportunity-avatar me-2" title="Mike Brown">
+                                                    <span>Mike Brown</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-success me-1"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-info"><i class="fas fa-arrow-right"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                <div class="fw-medium">Bulk Component Order</div>
+                                                <div class="text-muted small">Created: Sep 28, 2023</div>
+                                            </td>
+                                            <td>Prime Components</td>
+                                            <td>$75,000</td>
+                                            <td><span class="badge badge-order">Order</span></td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="progress me-2" style="width: 60px; height: 5px;">
+                                                        <div class="progress-bar" style="width: 90%; background-color: var(--order);"></div>
+                                                    </div>
+                                                    <span>90%</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://ui-avatars.com/api/?name=Sarah+Smith&background=27ae60&color=fff" class="opportunity-avatar me-2" title="Sarah Smith">
+                                                    <span>Sarah Smith</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-success me-1"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-info"><i class="fas fa-arrow-right"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <nav aria-label="Opportunity pagination">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#">Previous</a>
+                                    </li>
+                                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Forecast & Probability -->
+                <div class="col-xl-4 col-lg-12">
+                    <!-- Sales Forecast -->
+                    <div class="card dashboard-widget mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Sales Forecast</span>
+                            <a href="#" class="btn btn-sm btn-outline-primary">View Report</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="forecast-item">
+                                <h6 class="fw-bold">This Month</h6>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Expected Revenue</span>
+                                    <span class="fw-medium">$245,000</span>
+                                </div>
+                                <div class="progress mb-3" style="height: 8px;">
+                                    <div class="progress-bar" role="progressbar" style="width: 75%; background-color: var(--success);"></div>
+                                </div>
+                            </div>
+                            <div class="forecast-item">
+                                <h6 class="fw-bold">Next Month</h6>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Expected Revenue</span>
+                                    <span class="fw-medium">$310,000</span>
+                                </div>
+                                <div class="progress mb-3" style="height: 8px;">
+                                    <div class="progress-bar" role="progressbar" style="width: 55%; background-color: var(--warning);"></div>
+                                </div>
+                            </div>
+                            <div class="forecast-item">
+                                <h6 class="fw-bold">Quarterly</h6>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Expected Revenue</span>
+                                    <span class="fw-medium">$895,000</span>
+                                </div>
+                                <div class="progress mb-3" style="height: 8px;">
+                                    <div class="progress-bar" role="progressbar" style="width: 65%; background-color: var(--primary);"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Pipeline Activities -->
+                    <div class="card dashboard-widget">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Pipeline Activities</span>
+                            <a href="#" class="btn btn-sm btn-outline-primary">View All</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="activity-item">
+                                <div class="mb-1">Custom Machinery Parts moved to Inquiry stage</div>
+                                <div class="activity-time">Today, 10:30 AM</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="mb-1">Precision Components quotation sent</div>
+                                <div class="activity-time">Yesterday, 3:45 PM</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="mb-1">Assembly Equipment negotiation started</div>
+                                <div class="activity-time">Oct 12, 2023, 11:20 AM</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="mb-1">Bulk Component Order ready for conversion</div>
+                                <div class="activity-time">Oct 11, 2023, 4:20 PM</div>
+                            </div>
+                            <div class="activity-item">
+                                <div class="mb-1">Production Line Upgrade inquiry received</div>
+                                <div class="activity-time">Oct 10, 2023, 9:45 AM</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Opportunity Modal -->
+    <div class="modal fade" id="addOpportunityModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Opportunity</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Opportunity Name *</label>
+                                    <input type="text" class="form-control" placeholder="Enter opportunity name">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Company *</label>
+                                    <select class="form-select">
+                                        <option value="">Select company</option>
+                                        <option value="1">Tech Solutions Ltd</option>
+                                        <option value="2">Global Parts Inc</option>
+                                        <option value="3">Prime Components</option>
+                                        <option value="4">Innovate Manufacturing</option>
+                                        <option value="5">AutoTech Solutions</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Contact Person</label>
+                                    <select class="form-select">
+                                        <option value="">Select contact</option>
+                                        <option value="1">Robert Johnson (Tech Solutions Ltd)</option>
+                                        <option value="2">Jennifer Wilson (Global Parts Inc)</option>
+                                        <option value="3">David Miller (Prime Components)</option>
+                                        <option value="4">Emily Chen (Innovate Manufacturing)</option>
+                                        <option value="5">Michael Zhang (AutoTech Solutions)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Product Interest</label>
+                                    <select class="form-select">
+                                        <option value="">Select product</option>
+                                        <option value="1">Custom Machinery</option>
+                                        <option value="2">Precision Components</option>
+                                        <option value="3">Assembly Equipment</option>
+                                        <option value="4">Industrial Valves</option>
+                                        <option value="5">Specialized Tooling</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Opportunity Value ($)</label>
+                                    <input type="number" class="form-control" placeholder="Enter value">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Expected Close Date</label>
+                                    <input type="date" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Stage</label>
+                                    <select class="form-select">
+                                        <option value="inquiry">Inquiry</option>
+                                        <option value="quotation">Quotation</option>
+                                        <option value="negotiation">Negotiation</option>
+                                        <option value="order">Order</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Probability (%)</label>
+                                    <input type="range" class="form-range" min="0" max="100" step="5" value="30">
+                                    <div class="d-flex justify-content-between">
+                                        <small>0%</small>
+                                        <small>50%</small>
+                                        <small>100%</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Assign To</label>
+                                    <select class="form-select">
+                                        <option value="">Select sales rep</option>
+                                        <option value="1">John Doe</option>
+                                        <option value="2">Sarah Smith</option>
+                                        <option value="3">Mike Brown</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Priority</label>
+                                    <select class="form-select">
+                                        <option value="low">Low</option>
+                                        <option value="medium">Medium</option>
+                                        <option value="high">High</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" rows="3" placeholder="Add any additional notes"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary">Add Opportunity</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="Assets/js/salescript.js">
+        
+    </script>
+</body>
+</html>

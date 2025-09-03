@@ -20,7 +20,8 @@
             position: fixed;
             padding-top: 60px;
         }
-        
+    
+
         .sidebar .nav-link {
             color: rgba(255, 255, 255, 0.8);
             padding: 12px 20px;
@@ -148,8 +149,8 @@
         
         .notification-badge {
             position: absolute;
-            top: -5px;
-            right: -5px;
+            top: 15px;
+            right: 129px;
             padding: 3px 6px;
             font-size: 0.7rem;
         }

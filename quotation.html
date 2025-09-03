@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quotation Management - Manufacturing CRM</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --draft: #95a5a6;
+            --sent: #3498db;
+            --approved: #27ae60;
+            --revised: #f39c12;
+            --expired: #e74c3c;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .sidebar {
+            background-color: var(--primary);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 60px;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            margin: 4px 0;
+            border-radius: 4px;
+        }
+        
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .sidebar .nav-link.active {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px 20px;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            padding-top: 80px;
+        }
+        
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            border: none;
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+            padding: 15px 20px;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .stat-card .count {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .stat-card .label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .table th {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .quotation-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .activity-item {
+            border-left: 2px solid var(--secondary);
+            padding: 10px 15px;
+            margin-left: 15px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .activity-item:before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: var(--secondary);
+            position: absolute;
+            left: -7px;
+            top: 15px;
+            border-radius: 50%;
+        }
+        
+        .activity-time {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .notification-badge {
+            position: absolute;
+             top: 15px;
+            right: 175px;
+            padding: 3px 6px;
+            font-size: 0.7rem;
+        }
+        
+        .badge-draft {
+            background-color: var(--draft);
+        }
+        
+        .badge-sent {
+            background-color: var(--sent);
+        }
+        
+        .badge-approved {
+            background-color: var(--approved);
+        }
+        
+        .badge-revised {
+            background-color: var(--revised);
+        }
+        
+        .badge-expired {
+            background-color: var(--expired);
+        }
+        
+        .progress {
+            height: 8px;
+        }
+        
+        .quotation-preview {
+            background-color: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 20px;
+        }
+        
+        .company-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 30px;
+        }
+        
+        .quotation-title {
+            text-align: center;
+            margin: 25px 0;
+            color: var(--primary);
+        }
+        
+        .quotation-details {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+        }
+        
+        .quotation-meta {
+            width: 48%;
+        }
+        
+        .line-items {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+        
+        .line-items th {
+            background-color: #f8f9fa;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .line-items td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .line-items tr:last-child td {
+            border-bottom: 2px solid #ddd;
+        }
+        
+        .totals-table {
+            width: 50%;
+            margin-left: auto;
+        }
+        
+        .totals-table td {
+            padding: 8px 12px;
+        }
+        
+        .totals-table tr.total-row td {
+            font-weight: 600;
+            border-top: 2px solid #ddd;
+        }
+        
+        .terms-conditions {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid #eee;
+        }
+        
+        .document-attachments {
+            background-color: #f8f9fa;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .attachment-item:last-child {
+            border-bottom: none;
+        }
+        
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+                text-align: center;
+            }
+            
+            .sidebar .nav-link span {
+                display: none;
+            }
+            
+            .sidebar .nav-link i {
+                margin-right: 0;
+                font-size: 1.2rem;
+            }
+            
+            .main-content {
+                margin-left: 80px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .quotation-details {
+                flex-direction: column;
+            }
+            
+            .quotation-meta {
+                width: 100%;
+                margin-bottom: 20px;
+            }
+            
+            .totals-table {
+                width: 100%;
+            }
+        }
+         .nav {
+    --bs-nav-link-padding-x: 1rem;
+    --bs-nav-link-padding-y: 0.5rem;
+    --bs-nav-link-font-weight: ;
+    --bs-nav-link-color: var(--bs-link-color);
+    --bs-nav-link-hover-color: var(--bs-link-hover-color);
+    --bs-nav-link-disabled-color: var(--bs-secondary-color);
+    display: flex
+;
+    flex-wrap: wrap;
+    padding-left: 0px;
+    padding-top: 25px;
+    list-style: none;
+}
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-industry me-2"></i>
+                <span class="fw-bold">ManufacturingCRM</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge badge bg-danger">3</span>
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <img src="https://ui-avatars.com/api/?name=kishor+Darkunde&background=3498db&color=fff" class="quotation-avatar me-1">
+                            kishor
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i> Profile</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i> Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar col-lg-2 col-md-3 d-md-block">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="index.html">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="Customermgmt.html">
+                    <i class="fas fa-users"></i>
+                    <span>Customer Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="leadmgmt.html">
+                    <i class="fas fa-bullseye"></i>
+                    <span>Lead Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="salespipeline.html">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Sales Pipeline</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="quotation.html">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span>Quotations</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Orders</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-box"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-headset"></i>
+                    <span>Support Tickets</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reports</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container-fluid">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold">Quotation Management</h2>
+                <div>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createQuotationModal">
+                        <i class="fas fa-plus me-2"></i> Create Quotation
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card">
+                        <i class="fas fa-file-invoice" style="color: #3498db;"></i>
+                        <div class="count">24</div>
+                        <div class="label">TOTAL QUOTATIONS</div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card">
+                        <i class="fas fa-paper-plane" style="color: #9b59b6;"></i>
+                        <div class="count">14</div>
+                        <div class="label">SENT</div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card">
+                        <i class="fas fa-check-circle" style="color: #27ae60;"></i>
+                        <div class="count">8</div>
+                        <div class="label">APPROVED</div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card">
+                        <i class="fas fa-exchange-alt" style="color: #f39c12;"></i>
+                        <div class="count">5</div>
+                        <div class="label">REVISED</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Quotation List -->
+                <div class="col-xl-8 col-lg-12">
+                    <div class="card dashboard-widget">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>All Quotations</span>
+                            <div class="d-flex">
+                                <div class="input-group me-2" style="width: 200px;">
+                                    <input type="text" class="form-control" placeholder="Search quotations...">
+                                    <button class="btn btn-outline-secondary" type="button">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-filter me-1"></i> Filter
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#">All Quotations</a></li>
+                                        <li><a class="dropdown-item" href="#">Draft</a></li>
+                                        <li><a class="dropdown-item" href="#">Sent</a></li>
+                                        <li><a class="dropdown-item" href="#">Approved</a></li>
+                                        <li><a class="dropdown-item" href="#">Revised</a></li>
+                                        <li><a class="dropdown-item" href="#">Expired</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Quotation #</th>
+                                            <th>Client</th>
+                                            <th>Amount</th>
+                                            <th>Date</th>
+                                            <th>Status</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="fw-medium">QT-2023-1025</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://logo.clearbit.com/techsolutions.com" class="quotation-avatar me-3">
+                                                    <div>
+                                                        <div class="fw-medium">Tech Solutions Ltd</div>
+                                                        <div class="text-muted small">Robert Johnson</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>$45,000.00</td>
+                                            <td>Oct 25, 2023</td>
+                                            <td><span class="badge badge-sent">Sent</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-success me-1"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-info"><i class="fas fa-file-download"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-medium">QT-2023-1024</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://logo.clearbit.com/primecomponents.com" class="quotation-avatar me-3">
+                                                    <div>
+                                                        <div class="fw-medium">Prime Components</div>
+                                                        <div class="text-muted small">David Miller</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>$28,500.00</td>
+                                            <td>Oct 24, 2023</td>
+                                            <td><span class="badge badge-approved">Approved</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-success me-1"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-info"><i class="fas fa-file-download"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-medium">QT-2023-1023</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://logo.clearbit.com/autotechsolutions.com" class="quotation-avatar me-3">
+                                                    <div>
+                                                        <div class="fw-medium">AutoTech Solutions</div>
+                                                        <div class="text-muted small">Michael Zhang</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>$85,000.00</td>
+                                            <td>Oct 23, 2023</td>
+                                            <td><span class="badge badge-revised">Revised</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-success me-1"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-info"><i class="fas fa-file-download"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-medium">QT-2023-1020</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://logo.clearbit.com/innovate.com" class="quotation-avatar me-3">
+                                                    <div>
+                                                        <div class="fw-medium">Innovate Manufacturing</div>
+                                                        <div class="text-muted small">Emily Chen</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>$62,000.00</td>
+                                            <td>Oct 20, 2023</td>
+                                            <td><span class="badge badge-draft">Draft</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-success me-1"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-info"><i class="fas fa-file-download"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-medium">QT-2023-1015</td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://logo.clearbit.com/globalparts.com" class="quotation-avatar me-3">
+                                                    <div>
+                                                        <div class="fw-medium">Global Parts Inc</div>
+                                                        <div class="text-muted small">Jennifer Wilson</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>$120,000.00</td>
+                                            <td>Oct 15, 2023</td>
+                                            <td><span class="badge badge-expired">Expired</span></td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-success me-1"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-info"><i class="fas fa-file-download"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <nav aria-label="Quotation pagination">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#">Previous</a>
+                                    </li>
+                                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quotation Preview & Activity -->
+                <div class="col-xl-4 col-lg-12">
+                    <!-- Quotation Preview -->
+                    <div class="card dashboard-widget mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Quotation Preview</span>
+                            <a href="#" class="btn btn-sm btn-outline-primary">Edit</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="quotation-preview">
+                                <div class="company-header">
+                                    <div>
+                                        <h4 class="fw-bold">ManufacturingCRM Inc.</h4>
+                                        <p>123 Industry Way<br>Manufacturing Park, MP 12345<br>Phone: (555) 123-4567</p>
+                                    </div>
+                                    <div class="text-end">
+                                        <h5 class="fw-bold">QUOTATION</h5>
+                                        <p class="mb-0">QT-2023-1025</p>
+                                        <p class="mb-0">Date: Oct 25, 2023</p>
+                                        <p class="mb-0">Valid Until: Nov 25, 2023</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="quotation-title">
+                                    <h3>Quotation for Custom Machinery Parts</h3>
+                                </div>
+                                
+                                <div class="quotation-details">
+                                    <div class="quotation-meta">
+                                        <h6 class="fw-bold">Prepared For:</h6>
+                                        <p>
+                                            Tech Solutions Ltd<br>
+                                            Attn: Robert Johnson<br>
+                                            456 Innovation Drive<br>
+                                            Tech City, TC 67890
+                                        </p>
+                                    </div>
+                                    <div class="quotation-meta">
+                                        <h6 class="fw-bold">Prepared By:</h6>
+                                        <p>
+                                            John Doe<br>
+                                            Sales Manager<br>
+                                            ManufacturingCRM Inc.<br>
+                                            john.doe@manufacturingcrm.com
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <table class="line-items">
+                                    <thead>
+                                        <tr>
+                                            <th>Item</th>
+                                            <th>Description</th>
+                                            <th>Qty</th>
+                                            <th>Unit Price</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>MP-1001</td>
+                                            <td>Custom Machined Part - Aluminum</td>
+                                            <td>50</td>
+                                            <td>$450.00</td>
+                                            <td>$22,500.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>MP-1002</td>
+                                            <td>Precision Bearing Housing</td>
+                                            <td>25</td>
+                                            <td>$600.00</td>
+                                            <td>$15,000.00</td>
+                                        </tr>
+                                        <tr>
+                                            <td>SR-2001</td>
+                                            <td>Setup & Tooling Fee</td>
+                                            <td>1</td>
+                                            <td>$7,500.00</td>
+                                            <td>$7,500.00</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                
+                                <table class="totals-table">
+                                    <tr>
+                                        <td>Subtotal:</td>
+                                        <td class="text-end">$45,000.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Discount (5%):</td>
+                                        <td class="text-end">-$2,250.00</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Tax (8%):</td>
+                                        <td class="text-end">$3,420.00</td>
+                                    </tr>
+                                    <tr class="total-row">
+                                        <td>Total:</td>
+                                        <td class="text-end">$46,170.00</td>
+                                    </tr>
+                                </table>
+                                
+                                <div class="terms-conditions">
+                                    <h6 class="fw-bold">Terms & Conditions:</h6>
+                                    <p class="small">
+                                        1. This quotation is valid for 30 days from the date of issue.<br>
+                                        2. Payment terms: Net 30 days from invoice date.<br>
+                                        3. Delivery: 4-6 weeks from order confirmation.<br>
+                                        4. Prices are FOB our manufacturing facility.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Document Attachments -->
+                    <div class="card dashboard-widget">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Attached Documents</span>
+                            <a href="#" class="btn btn-sm btn-outline-primary">Add</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="document-attachments">
+                                <div class="attachment-item">
+                                    <i class="fas fa-file-pdf me-3" style="color: #e74c3c; font-size: 1.5rem;"></i>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-medium">Product_Brochure.pdf</div>
+                                        <div class="text-muted small">Added Oct 25, 2023 by John Doe</div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                                <div class="attachment-item">
+                                    <i class="fas fa-file-image me-3" style="color: #3498db; font-size: 1.5rem;"></i>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-medium">Technical_Specs.png</div>
+                                        <div class="text-muted small">Added Oct 25, 2023 by John Doe</div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                                <div class="attachment-item">
+                                    <i class="fas fa-file-word me-3" style="color: #2c3e50; font-size: 1.5rem;"></i>
+                                    <div class="flex-grow-1">
+                                        <div class="fw-medium">Terms_Conditions.docx</div>
+                                        <div class="text-muted small">Added Oct 24, 2023 by Sarah Smith</div>
+                                    </div>
+                                    <button class="btn btn-sm btn-outline-secondary">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-success">
+                                    <i class="fas fa-shopping-cart me-2"></i> Convert to Sales Order
+                                </button>
+                                <div class="btn-group">
+                                    <button class="btn btn-outline-primary">
+                                        <i class="fas fa-paper-plane me-2"></i> Send to Client
+                                    </button>
+                                    <button class="btn btn-outline-primary">
+                                        <i class="fas fa-print"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Quotation Modal -->
+    <div class="modal fade" id="createQuotationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Quotation</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Client *</label>
+                                    <select class="form-select">
+                                        <option value="">Select client</option>
+                                        <option value="1">Tech Solutions Ltd</option>
+                                        <option value="2">Global Parts Inc</option>
+                                        <option value="3">Prime Components</option>
+                                        <option value="4">Innovate Manufacturing</option>
+                                        <option value="5">AutoTech Solutions</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Contact Person *</label>
+                                    <select class="form-select">
+                                        <option value="">Select contact</option>
+                                        <option value="1">Robert Johnson (Tech Solutions Ltd)</option>
+                                        <option value="2">Jennifer Wilson (Global Parts Inc)</option>
+                                        <option value="3">David Miller (Prime Components)</option>
+                                        <option value="4">Emily Chen (Innovate Manufacturing)</option>
+                                        <option value="5">Michael Zhang (AutoTech Solutions)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Quotation Date</label>
+                                    <input type="date" class="form-control" value="2023-10-25">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Expiry Date</label>
+                                    <input type="date" class="form-control" value="2023-11-25">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Currency</label>
+                                    <select class="form-select">
+                                        <option value="usd">USD ($)</option>
+                                        <option value="eur">EUR (€)</option>
+                                        <option value="gbp">GBP (£)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h5 class="mb-3">Line Items</h5>
+                        <div class="table-responsive mb-4">
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Item</th>
+                                        <th>Description</th>
+                                        <th>Quantity</th>
+                                        <th>Unit Price</th>
+                                        <th>Tax</th>
+                                        <th>Total</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td>
+                                            <input type="text" class="form-control form-control-sm" placeholder="Item Code">
+                                        </td>
+                                        <td>
+                                            <input type="text" class="form-control form-control-sm" placeholder="Item Description">
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control form-control-sm" placeholder="Qty" value="1">
+                                        </td>
+                                        <td>
+                                            <input type="number" class="form-control form-control-sm" placeholder="Price" step="0.01">
+                                        </td>
+                                        <td>
+                                            <select class="form-select form-select-sm">
+                                                <option value="0">0%</option>
+                                                <option value="8" selected>8%</option>
+                                                <option value="18">18%</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <span class="fw-medium">$0.00</span>
+                                        </td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="7" class="text-center">
+                                            <button type="button" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-plus me-1"></i> Add Item
+                                            </button>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Discount</label>
+                                    <div class="input-group">
+                                        <input type="number" class="form-control" placeholder="Discount" value="5">
+                                        <span class="input-group-text">%</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Terms & Conditions</label>
+                                    <textarea class="form-control" rows="3" placeholder="Add terms and conditions"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" rows="2" placeholder="Add internal notes"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-primary">Save Draft</button>
+                    <button type="button" class="btn btn-primary">Create Quotation</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="Assets/js/quotationscript.js"></script>
+    
+</body>
+</html>

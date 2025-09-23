@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support Tickets - Manufacturing CRM</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --light: #ecf0f1;
+            --dark: #2c3e50;
+            --success: #27ae60;
+            --warning: #f39c12;
+            --open: #e74c3c;
+            --in-progress: #f39c12;
+            --resolved: #27ae60;
+            --closed: #95a5a6;
+            --high: #e74c3c;
+            --medium: #f39c12;
+            --low: #3498db;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .sidebar {
+            background-color: var(--primary);
+            color: white;
+            height: 100vh;
+            position: fixed;
+            padding-top: 60px;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            margin: 4px 0;
+            border-radius: 4px;
+        }
+        
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .sidebar .nav-link.active {
+            background-color: var(--secondary);
+            color: white;
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 15px 20px;
+        }
+        
+        .main-content {
+            margin-left: 250px;
+            padding: 20px;
+            padding-top: 80px;
+        }
+        
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            border: none;
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid #eee;
+            font-weight: 600;
+            padding: 15px 20px;
+        }
+        
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+            transition: transform 0.2s;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .stat-card .count {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .stat-card .label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        
+        .table th {
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        .ticket-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .activity-item {
+            border-left: 2px solid var(--secondary);
+            padding: 10px 15px;
+            margin-left: 15px;
+            margin-bottom: 15px;
+            position: relative;
+        }
+        
+        .activity-item:before {
+            content: '';
+            width: 12px;
+            height: 12px;
+            background: var(--secondary);
+            position: absolute;
+            left: -7px;
+            top: 15px;
+            border-radius: 50%;
+        }
+        
+        .activity-time {
+            font-size: 0.8rem;
+            color: #6c757d;
+        }
+        
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            padding: 3px 6px;
+            font-size: 0.7rem;
+        }
+        
+        .badge-open {
+            background-color: var(--open);
+        }
+        
+        .badge-in-progress {
+            background-color: var(--in-progress);
+        }
+        
+        .badge-resolved {
+            background-color: var(--resolved);
+        }
+        
+        .badge-closed {
+            background-color: var(--closed);
+        }
+        
+        .badge-high {
+            background-color: var(--high);
+        }
+        
+        .badge-medium {
+            background-color: var(--medium);
+        }
+        
+        .badge-low {
+            background-color: var(--low);
+        }
+        
+        .badge-sla-critical {
+            background-color: #e74c3c;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .badge-sla-warning {
+            background-color: #f39c12;
+        }
+        
+        .badge-sla-ok {
+            background-color: #27ae60;
+        }
+        
+        .progress {
+            height: 8px;
+        }
+        
+        .ticket-card {
+            background-color: white;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .ticket-card.in-progress {
+            border-left-color: #f39c12;
+        }
+        
+        .ticket-card.resolved {
+            border-left-color: #27ae60;
+        }
+        
+        .ticket-card.closed {
+            border-left-color: #95a5a6;
+        }
+        
+        .sla-indicator {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .sla-progress {
+            flex-grow: 1;
+            height: 6px;
+            background-color: #ecf0f1;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 0 10px;
+        }
+        
+        .sla-progress-bar {
+            height: 100%;
+            border-radius: 3px;
+        }
+        
+        .sla-critical .sla-progress-bar {
+            background-color: #e74c3c;
+        }
+        
+        .sla-warning .sla-progress-bar {
+            background-color: #f39c12;
+        }
+        
+        .sla-ok .sla-progress-bar {
+            background-color: #27ae60;
+        }
+        
+        .message-container {
+            max-height: 300px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 6px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .message {
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            max-width: 80%;
+        }
+        
+        .message.customer {
+            background-color: #e3f2fd;
+            margin-right: auto;
+        }
+        
+        .message.agent {
+            background-color: #f3e5f5;
+            margin-left: auto;
+        }
+        
+        .message-system {
+            background-color: #fff3e0;
+            margin: 0 auto;
+            text-align: center;
+            max-width: 60%;
+            font-style: italic;
+        }
+        
+        .priority-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 80px;
+                text-align: center;
+            }
+            
+            .sidebar .nav-link span {
+                display: none;
+            }
+            
+            .sidebar .nav-link i {
+                margin-right: 0;
+                font-size: 1.2rem;
+            }
+            
+            .main-content {
+                margin-left: 80px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                display: none;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-industry me-2"></i>
+                <span class="fw-bold">ManufacturingCRM</span>
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <i class="fas fa-bell"></i>
+                            <span class="notification-badge badge bg-danger">7</span>
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <img src="https://ui-avatars.com/api/?name=John+Doe&background=3498db&color=fff" class="ticket-avatar me-1">
+                            John Doe
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i> Profile</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i> Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Sidebar -->
+    <div class="sidebar col-lg-2 col-md-3 d-md-block">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="index.html">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="customermgmt.html">
+                    <i class="fas fa-users"></i>
+                    <span>Customer Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="leadmgmt.html">
+                    <i class="fas fa-bullseye"></i>
+                    <span>Lead Management</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="salespipeline.html">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Sales Pipeline</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="quotations.html">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    <span>Quotations</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="orders.html">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span>Orders</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="product.html">
+                    <i class="fas fa-box"></i>
+                    <span>Products</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="supportticket.html">
+                    <i class="fas fa-headset"></i>
+                    <span>Support Tickets</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reports</span>
+                </a>
+            </li>
+        </ul>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container-fluid">
+            <!-- Page Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="fw-bold">Support Ticket Management</h2>
+                <div>
+                    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createTicketModal">
+                        <i class="fas fa-plus me-2"></i> Create Ticket
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats Overview -->
+            <div class="row mb-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card">
+                        <i class="fas fa-ticket-alt" style="color: #3498db;"></i>
+                        <div class="count">42</div>
+                        <div class="label">TOTAL TICKETS</div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card">
+                        <i class="fas fa-exclamation-circle" style="color: #e74c3c;"></i>
+                        <div class="count">18</div>
+                        <div class="label">OPEN TICKETS</div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card">
+                        <i class="fas fa-clock" style="color: #f39c12;"></i>
+                        <div class="count">5</div>
+                        <div class="label">SLA AT RISK</div>
+                    </div>
+                </div>
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stat-card">
+                        <i class="fas fa-check-circle" style="color: #27ae60;"></i>
+                        <div class="count">24</div>
+                        <div class="label">RESOLVED THIS MONTH</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Ticket List -->
+                <div class="col-xl-8 col-lg-12">
+                    <div class="card dashboard-widget">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>All Support Tickets</span>
+                            <div class="d-flex">
+                                <div class="input-group me-2" style="width: 200px;">
+                                    <input type="text" class="form-control" placeholder="Search tickets...">
+                                    <button class="btn btn-outline-secondary" type="button">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        <i class="fas fa-filter me-1"></i> Filter
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#">All Tickets</a></li>
+                                        <li><a class="dropdown-item" href="#">Open</a></li>
+                                        <li><a class="dropdown-item" href="#">In Progress</a></li>
+                                        <li><a class="dropdown-item" href="#">Resolved</a></li>
+                                        <li><a class="dropdown-item" href="#">Closed</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><a class="dropdown-item" href="#">By Priority</a></li>
+                                        <li><a class="dropdown-item" href="#">By Assignee</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Ticket #</th>
+                                            <th>Subject</th>
+                                            <th>Customer</th>
+                                            <th>Priority</th>
+                                            <th>Status</th>
+                                            <th>SLA</th>
+                                            <th>Assignee</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="fw-medium">TKT-2023-1028</td>
+                                            <td>
+                                                <div class="fw-medium">CNC Machine Calibration Issue</div>
+                                                <div class="text-muted small">Precision CNC Machine PCM-5000</div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://logo.clearbit.com/primecomponents.com" class="ticket-avatar me-3">
+                                                    <div>
+                                                        <div class="fw-medium">Prime Components</div>
+                                                        <div class="text-muted small">David Miller</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-high">
+                                                    <span class="priority-indicator" style="background-color: #e74c3c;"></span>
+                                                    High
+                                                </span>
+                                            </td>
+                                            <td><span class="badge badge-open">Open</span></td>
+                                            <td><span class="badge badge-sla-critical">2h remaining</span></td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://ui-avatars.com/api/?name=Sarah+Smith&background=27ae60&color=fff" class="ticket-avatar me-2" title="Sarah Smith">
+                                                    <span>Sarah Smith</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-success me-1"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-info"><i class="fas fa-comment"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-medium">TKT-2023-1027</td>
+                                            <td>
+                                                <div class="fw-medium">Conveyor Belt Replacement Request</div>
+                                                <div class="text-muted small">Industrial Conveyor System ICS-20M</div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://logo.clearbit.com/autotechsolutions.com" class="ticket-avatar me-3">
+                                                    <div>
+                                                        <div class="fw-medium">AutoTech Solutions</div>
+                                                        <div class="text-muted small">Michael Zhang</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-medium">
+                                                    <span class="priority-indicator" style="background-color: #f39c12;"></span>
+                                                    Medium
+                                                </span>
+                                            </td>
+                                            <td><span class="badge badge-in-progress">In Progress</span></td>
+                                            <td><span class="badge badge-sla-warning">1d remaining</span></td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://ui-avatars.com/api/?name=Mike+Brown&background=f39c12&color=fff" class="ticket-avatar me-2" title="Mike Brown">
+                                                    <span>Mike Brown</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-success me-1"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-info"><i class="fas fa-comment"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-medium">TKT-2023-1026</td>
+                                            <td>
+                                                <div class="fw-medium">Software Update Inquiry</div>
+                                                <div class="text-muted small">Control System v2.5</div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://logo.clearbit.com/techsolutions.com" class="ticket-avatar me-3">
+                                                    <div>
+                                                        <div class="fw-medium">Tech Solutions Ltd</div>
+                                                        <div class="text-muted small">Robert Johnson</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-low">
+                                                    <span class="priority-indicator" style="background-color: #3498db;"></span>
+                                                    Low
+                                                </span>
+                                            </td>
+                                            <td><span class="badge badge-resolved">Resolved</span></td>
+                                            <td><span class="badge badge-sla-ok">Completed</span></td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=3498db&color=fff" class="ticket-avatar me-2" title="John Doe">
+                                                    <span>John Doe</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-success me-1"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-info"><i class="fas fa-comment"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-medium">TKT-2023-1025</td>
+                                            <td>
+                                                <div class="fw-medium">Warranty Claim - Motor Failure</div>
+                                                <div class="text-muted small">Under AMC until Dec 2024</div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://logo.clearbit.com/innovate.com" class="ticket-avatar me-3">
+                                                    <div>
+                                                        <div class="fw-medium">Innovate Manufacturing</div>
+                                                        <div class="text-muted small">Emily Chen</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-high">
+                                                    <span class="priority-indicator" style="background-color: #e74c3c;"></span>
+                                                    High
+                                                </span>
+                                            </td>
+                                            <td><span class="badge badge-in-progress">In Progress</span></td>
+                                            <td><span class="badge badge-sla-ok">5d remaining</span></td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://ui-avatars.com/api/?name=Sarah+Smith&background=27ae60&color=fff" class="ticket-avatar me-2" title="Sarah Smith">
+                                                    <span>Sarah Smith</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-success me-1"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-info"><i class="fas fa-comment"></i></button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="fw-medium">TKT-2023-1024</td>
+                                            <td>
+                                                <div class="fw-medium">Training Request - New Operators</div>
+                                                <div class="text-muted small">For assembly line team</div>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://logo.clearbit.com/globalparts.com" class="ticket-avatar me-3">
+                                                    <div>
+                                                        <div class="fw-medium">Global Parts Inc</div>
+                                                        <div class="text-muted small">Jennifer Wilson</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-medium">
+                                                    <span class="priority-indicator" style="background-color: #f39c12;"></span>
+                                                    Medium
+                                                </span>
+                                            </td>
+                                            <td><span class="badge badge-closed">Closed</span></td>
+                                            <td><span class="badge badge-sla-ok">Completed</span></td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <img src="https://ui-avatars.com/api/?name=Mike+Brown&background=f39c12&color=fff" class="ticket-avatar me-2" title="Mike Brown">
+                                                    <span>Mike Brown</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-eye"></i></button>
+                                                <button class="btn btn-sm btn-outline-success me-1"><i class="fas fa-edit"></i></button>
+                                                <button class="btn btn-sm btn-outline-info"><i class="fas fa-comment"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <nav aria-label="Ticket pagination">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item disabled">
+                                        <a class="page-link" href="#">Previous</a>
+                                    </li>
+                                    <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">2</a></li>
+                                    <li class="page-item"><a class="page-link" href="#">3</a></li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="#">Next</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Ticket Details & Communication -->
+                <div class="col-xl-4 col-lg-12">
+                    <!-- Ticket Details -->
+                    <div class="card dashboard-widget mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Ticket Details</span>
+                            <span class="fw-medium">TKT-2023-1028</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="ticket-card">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="fw-medium">CNC Machine Calibration Issue</div>
+                                    <span class="badge badge-high">High Priority</span>
+                                </div>
+                                <div class="mb-2">
+                                    <span class="fw-medium">Prime Components</span>
+                                    <div class="text-muted small">David Miller • Oct 28, 2023 10:15 AM</div>
+                                </div>
+                                
+                                <div class="sla-indicator sla-critical">
+                                    <small class="text-muted">Created:</small>
+                                    <small class="fw-medium ms-1">2 hours ago</small>
+                                    <div class="sla-progress">
+                                        <div class="sla-progress-bar" style="width: 80%"></div>
+                                    </div>
+                                    <small class="fw-medium">2h remaining</small>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <p class="mb-2">The CNC machine is producing parts with dimensional inaccuracies. Calibration seems off by approximately 0.5mm.</p>
+                                    <div class="small text-muted">
+                                        <i class="fas fa-tag me-1"></i> 
+                                        <span class="badge bg-light text-dark">Calibration</span>
+                                        <span class="badge bg-light text-dark">PCM-5000</span>
+                                        <span class="badge bg-light text-dark">Warranty</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <small class="text-muted">Assigned to:</small>
+                                        <div class="d-flex align-items-center">
+                                            <img src="https://ui-avatars.com/api/?name=Sarah+Smith&background=27ae60&color=fff" class="ticket-avatar me-2" title="Sarah Smith">
+                                            <span>Sarah Smith</span>
+                                        </div>
+                                    </div>
+                                    <div class="btn-group">
+                                        <button class="btn btn-sm btn-outline-primary">Take Ownership</button>
+                                        <button class="btn btn-sm btn-outline-success">Escalate</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="message-container">
+                                <div class="message customer">
+                                    <div class="fw-medium">David Miller</div>
+                                    <div class="text-muted small">Oct 28, 2023 10:15 AM</div>
+                                    <p class="mb-0 mt-1">Our CNC machine started producing inaccurate parts yesterday. We've checked the material and setup, but the issue persists. This is affecting our production timeline.</p>
+                                </div>
+                                
+                                <div class="message-system">
+                                    Ticket assigned to Sarah Smith • Oct 28, 2023 10:30 AM
+                                </div>
+                                
+                                <div class="message agent">
+                                    <div class="fw-medium">Sarah Smith</div>
+                                    <div class="text-muted small">Oct 28, 2023 11:45 AM</div>
+                                    <p class="mb-0 mt-1">Thank you for reporting this issue. I've reviewed the error logs and it appears to be a calibration issue. Our technician will contact you within the hour to schedule a remote diagnostic session.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex gap-2">
+                                <input type="text" class="form-control" placeholder="Type your response...">
+                                <button class="btn btn-primary">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SLA Status -->
+                    <div class="card dashboard-widget">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>SLA Status Overview</span>
+                            <a href="#" class="btn btn-sm btn-outline-primary">View Reports</a>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Response Time SLA</h6>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Within 4 hours</span>
+                                    <span class="fw-medium">92% compliance</span>
+                                </div>
+                                <div class="progress mb-3" style="height: 8px;">
+                                    <div class="progress-bar" role="progressbar" style="width: 92%; background-color: #27ae60;"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Resolution Time SLA</h6>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Within 3 business days</span>
+                                    <span class="fw-medium">85% compliance</span>
+                                </div>
+                                <div class="progress mb-3" style="height: 8px;">
+                                    <div class="progress-bar" role="progressbar" style="width: 85%; background-color: #f39c12;"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <h6 class="fw-bold">Customer Satisfaction</h6>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span>Based on 42 surveys</span>
+                                    <span class="fw-medium">4.7/5.0 rating</span>
+                                </div>
+                                <div class="progress mb-3" style="height: 8px;">
+                                    <div class="progress-bar" role="progressbar" style="width: 94%; background-color: #27ae60;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Ticket Modal -->
+    <div class="modal fade" id="createTicketModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Create New Support Ticket</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Customer *</label>
+                                    <select class="form-select">
+                                        <option value="">Select customer</option>
+                                        <option value="1">Tech Solutions Ltd</option>
+                                        <option value="2">Global Parts Inc</option>
+                                        <option value="3">Prime Components</option>
+                                        <option value="4">Innovate Manufacturing</option>
+                                        <option value="5">AutoTech Solutions</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Contact Person *</label>
+                                    <select class="form-select">
+                                        <option value="">Select contact</option>
+                                        <option value="1">Robert Johnson (Tech Solutions Ltd)</option>
+                                        <option value="2">Jennifer Wilson (Global Parts Inc)</option>
+                                        <option value="3">David Miller (Prime Components)</option>
+                                        <option value="4">Emily Chen (Innovate Manufacturing)</option>
+                                        <option value="5">Michael Zhang (AutoTech Solutions)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label class="form-label">Subject *</label>
+                                    <input type="text" class="form-control" placeholder="Enter ticket subject">
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Product/Service</label>
+                                    <select class="form-select">
+                                        <option value="">Select product</option>
+                                        <option value="1">Precision CNC Machine</option>
+                                        <option value="2">Industrial Conveyor System</option>
+                                        <option value="3">Assembly Equipment</option>
+                                        <option value="4">Technical Support</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row mb-4">
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label">Priority *</label>
+                                    <select class="form-select">
+                                        <option value="low">Low</option>
+                                        <option value="medium">Medium</option>  
+                                        <option value="high">High</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label
+">Status *</label>
+                                    <select class="form-select">
+                                        <option value="open">Open</option>
+                                        <option value="in-progress">In Progress</option>
+                                        <option value="resolved">Resolved</option>
+                                        <option value="closed">Closed</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="mb-3">
+                                    <label class="form-label
+">Assignee</label>
+                                    <select class="form-select">
+                                        <option value="">Unassigned</option>
+                                        <option value="1">John Doe</option>
+                                        <option value="2">Sarah Smith</option>
+                                        <option value="3">Mike Brown</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label class="form-label
+">Description *</label>
+                            <textarea class="form-control" rows="4" placeholder="Describe the issue in detail"></textarea>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label    
+">Tags</label>
+                            <input type="text" class="form-control" placeholder="Add tags separated by commas
+">
+                        </div>  
+                        <div class="text-end">
+                            <button type="button" class="btn btn-secondary me-2" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Create Ticket</button>
+                        </div>
+                    </form>
+                </div>  
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="./Assets/js/supprtticket.js">        
+      
+    </script>
+</body>
+</html>
